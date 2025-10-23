@@ -1,11 +1,14 @@
 const { Client, GatewayIntentBits, REST, Routes } = require("discord.js");
 require("dotenv").config();
+const express = require("express");
 const pool = require("./db"); // Import the database pool
 
 // --- Configuration ---
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
-const CLIENT_ID = "1430429476583379096";
-const GUILD_ID = "1275537620935512074";
+const CLIENT_ID = "1430429476583379096"; // Your Bot Client ID
+const GUILD_ID = "1275537620935512074"; // Your Guild ID
+const WEBHOOK_PORT = process.env.WEBHOOK_PORT || 3001; // Port for the Express server
+const ADMIN_CHANNEL_ID = process.env.ADMIN_CHANNEL_ID; // Channel for applications
 
 const client = new Client({
   intents: [
@@ -17,8 +20,6 @@ const client = new Client({
 
 // --- Role Definitions (Used for Command Choices) ---
 
-// This map defines all valid role names for the Discord command dropdown.
-// The boolean value is a placeholder since the image paths are handled client-side.
 const ROLE_IMAGE_MAP = {
   // MOBA Roles
   Top: true,
@@ -26,14 +27,12 @@ const ROLE_IMAGE_MAP = {
   Mid: true,
   ADC: true,
   Support: true,
-
   // FPS Roles
   AWPer: true,
   Entry_Fragger: true,
   Controller: true,
   Sentinel: true,
   Duelist: true,
-
   // General/Fallback Roles
   Captain: true,
   Flex: true,
@@ -47,17 +46,15 @@ const ROLE_IMAGE_MAP = {
   Scout: true,
   In_Game_Leader: true,
   Lurker: true,
-
-  // Default fallback key (excluded from choices)
   DEFAULT: true,
 };
 
 // Generate choices array for the Discord command
 const roleChoices = Object.keys(ROLE_IMAGE_MAP)
-  .filter((role) => role !== "DEFAULT") // Exclude the internal default key
+  .filter((role) => role !== "DEFAULT")
   .map((role) => ({
-    name: role, // Displayed in the dropdown
-    value: role, // Sent to the bot/inserted into the DB
+    name: role,
+    value: role,
   }));
 
 // --- Security Function ---
@@ -71,9 +68,7 @@ async function isAdmin(discordId) {
   const query = "SELECT discord_id FROM Admins WHERE discord_id = $1";
 
   try {
-    // Ensure the ID is passed as a string to handle the BIGINT type safely
     const result = await pool.query(query, [discordId.toString()]);
-
     return result.rows.length > 0;
   } catch (error) {
     console.error(
@@ -84,7 +79,140 @@ async function isAdmin(discordId) {
   }
 }
 
-// --- Command Definitions (UPDATED /add_player) ---
+// ------------------------------------------------------------------
+// --- Express Webhook Logic ---
+// ------------------------------------------------------------------
+
+/**
+ * Posts the join application details to a specific Discord channel.
+ * @param {object} formData - The data submitted from the web form.
+ */
+async function postApplicationToDiscord(formData) {
+  // 1. Initial State Check (Enhanced logging for easier debugging)
+  if (!client.isReady()) {
+    console.error("❌ [Webhook] Client not ready. Application not posted.");
+    return {
+      success: false,
+      message: "Bot is initializing. Try again in a moment.",
+    };
+  }
+
+  if (!ADMIN_CHANNEL_ID) {
+    console.error("❌ [Webhook] ADMIN_CHANNEL_ID is not configured in .env.");
+    return {
+      success: false,
+      message: "Server configuration error: Admin channel ID is missing.",
+    };
+  }
+
+  try {
+    // 2. Fetch Channel
+    const channel = await client.channels.fetch(ADMIN_CHANNEL_ID);
+
+    if (!channel || !channel.send) {
+      console.error(
+        `❌ [Webhook] Channel ID ${ADMIN_CHANNEL_ID} not found or is not a text channel.`
+      );
+      return {
+        success: false,
+        message: "Target Discord channel not found or inaccessible.",
+      };
+    }
+
+    // 3. Construct and Send Message
+    const messageContent = {
+      embeds: [
+        {
+          title: "🚨 NEW WEB APPLICATION RECEIVED",
+          color: 0x00ff00, // Green
+          fields: [
+            { name: "Full Name", value: formData.name || "N/A", inline: true },
+            {
+              name: "Discord Username",
+              value: `\`${formData.discord}\`` || "N/A",
+              inline: true,
+            },
+            {
+              name: "Email Address",
+              value: formData.email || "N/A",
+              inline: false,
+            },
+            {
+              name: "Phone Number",
+              value: formData.phone || "*(Not Provided)*",
+              inline: false,
+            },
+          ],
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    };
+
+    await channel.send(messageContent);
+    console.log(
+      `✅ [Webhook] Application successfully posted for: ${formData.name}`
+    );
+    return { success: true, message: "Application submitted and posted." };
+  } catch (error) {
+    console.error(
+      "🔥 [Webhook] Error sending message to Discord API:",
+      error.stack
+    );
+    return {
+      success: false,
+      message: "Failed to communicate with Discord API.",
+    };
+  }
+}
+
+// ------------------------------------------------------------------
+// --- EXPRESS WEBHOOK SETUP (Corrected Initialization) ---
+// ------------------------------------------------------------------
+
+// 🛑 ISSUE FIXED: 'app' is defined once globally here.
+const app = express();
+app.use(express.json()); // CRITICAL: Middleware to parse JSON request bodies
+
+// Route to receive POST data from the Next.js frontend
+app.post("/webhook/application", async (req, res) => {
+  const formData = req.body;
+  // LOG 1: Confirm data arrival
+  console.log(
+    "➡️ [Express] Received application data via webhook for:",
+    formData.name || "Unknown"
+  );
+
+  // Basic Validation Check
+  if (!formData.name || !formData.discord || !formData.email) {
+    // LOG 2: Invalid data received
+    console.error(
+      "❌ [Express] Rejected: Missing required fields (name, discord, email)."
+    );
+    return res.status(400).json({
+      success: false,
+      message: "Missing required fields (name, discord, email).",
+    });
+  }
+
+  // Call the Discord message function
+  const result = await postApplicationToDiscord(formData);
+
+  if (result.success) {
+    // LOG 3: Successful post
+    return res.status(200).json(result);
+  } else {
+    // LOG 4: Failure in Discord posting logic
+    console.error(
+      `❌ [Express] Failed to post to Discord. Status: 503, Reason: ${result.message}`
+    );
+    // Return a server error if the bot failed to post the message
+    return res.status(503).json(result);
+  }
+});
+
+// ------------------------------------------------------------------
+// --- COMMAND DEFINITIONS (EXISTING) ---
+// ------------------------------------------------------------------
 
 const commands = [
   {
@@ -160,7 +288,6 @@ const commands = [
         type: 3,
         description: "The player's role (e.g., Captain, Support).",
         required: true,
-        // Inject the generated choices here
         choices: roleChoices,
       },
     ],
@@ -191,15 +318,28 @@ const commands = [
   },
 ];
 
-// --- Bot Ready Event (Registers Commands) ---
+// ------------------------------------------------------------------
+// --- BOT EVENTS ---
+// ------------------------------------------------------------------
 
+// --- Bot Ready Event (Registers Commands and starts Express) ---
 client.on("ready", async () => {
   console.log(`🤖 Logged in as ${client.user.tag}!`);
+
+  // Start the Express server
+  app.listen(WEBHOOK_PORT, () => {
+    // Enhanced logging
+    console.log(
+      `✅ 🌐 Webhook server listening on port ${WEBHOOK_PORT} (http://localhost:${WEBHOOK_PORT})`
+    );
+    console.log(
+      `Endpoint: http://localhost:${WEBHOOK_PORT}/webhook/application`
+    );
+  });
 
   const rest = new REST({ version: "10" }).setToken(DISCORD_TOKEN);
 
   try {
-    // Register commands to a specific guild for fast testing
     await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
       body: commands,
     });
@@ -209,7 +349,7 @@ client.on("ready", async () => {
   }
 });
 
-// --- Slash Command Handler ---
+// --- Slash Command Handler (Existing Logic) ---
 
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
@@ -435,14 +575,13 @@ client.on("interactionCreate", async (interaction) => {
     try {
       // 1. Get all teams for the game
       const teamsQuery = `
-				 SELECT t.team_id, t.team_name
-				 FROM Teams t
-				 JOIN Games g ON t.game_id = g.game_id
-				 WHERE g.name ILIKE $1
-				 ORDER BY t.team_name;
-			 `;
+          SELECT t.team_id, t.team_name
+          FROM Teams t
+          JOIN Games g ON t.game_id = g.game_id
+          WHERE g.name ILIKE $1
+          ORDER BY t.team_name;
+        `;
 
-      // Use ILIKE and wildcards for flexible search
       const teamsResult = await pool.query(teamsQuery, [`%${gameName}%`]);
 
       if (teamsResult.rows.length === 0) {
@@ -453,14 +592,14 @@ client.on("interactionCreate", async (interaction) => {
 
       let teamsList = [];
 
-      // 2. Loop through each team to fetch its players
+      // loopin thru each team to check players
       for (const team of teamsResult.rows) {
         const playersQuery = `
-						 SELECT name, role
-						 FROM Players
-						 WHERE team_id = $1
-						 ORDER BY role;
-					 `;
+              SELECT name, role
+              FROM Players
+              WHERE team_id = $1
+              ORDER BY role;
+            `;
         const playersResult = await pool.query(playersQuery, [team.team_id]);
 
         const playerCount = playersResult.rows.length;

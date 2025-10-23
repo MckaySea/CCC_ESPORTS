@@ -1,11 +1,12 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { useState } from "react"
-import { Menu, X } from "lucide-react"
+import Link from "next/link";
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
+import Image from "next/image";
 
 export function Navbar() {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   const games = [
     { name: "League of Legends", slug: "league-of-legends" },
@@ -14,23 +15,42 @@ export function Navbar() {
     { name: "Rocket League", slug: "rocket-league" },
     { name: "Overwatch 2", slug: "overwatch-2" },
     { name: "Apex Legends", slug: "apex-legends" },
-  ]
+  ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-primary/20">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link href="/#" scroll={true} className="text-xl font-black uppercase tracking-tight">
-            <span className="text-primary">CCC</span> Esports
+          <Link
+            href="/#"
+            scroll={true}
+            className="flex items-center gap-3 group"
+          >
+            <div className="relative w-10 h-10 transition-transform group-hover:scale-110">
+              <Image
+                src="/ccc-esports-logo.png"
+                alt="CCC Esports Logo"
+                fill
+                className="object-contain"
+              />
+            </div>
+            <span className="text-xl font-black uppercase tracking-tight hidden sm:block">
+              <span className="text-primary">CCC</span> Esports
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <Link href="/" className="text-sm font-semibold hover:text-primary transition-colors">
+            <Link
+              href="/"
+              className="text-sm font-semibold hover:text-primary transition-colors"
+            >
               Home
             </Link>
             <div className="relative group">
-              <button className="text-sm font-semibold hover:text-primary transition-colors">Teams</button>
+              <button className="text-sm font-semibold hover:text-primary transition-colors">
+                Teams
+              </button>
               <div className="absolute top-full left-0 mt-2 w-48 bg-card border border-primary/20 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                 {games.map((game) => (
                   <Link
@@ -43,7 +63,10 @@ export function Navbar() {
                 ))}
               </div>
             </div>
-            <Link href="/#about" className="text-sm font-semibold hover:text-primary transition-colors">
+            <Link
+              href="/#about"
+              className="text-sm font-semibold hover:text-primary transition-colors"
+            >
               About
             </Link>
           </div>
@@ -69,7 +92,9 @@ export function Navbar() {
                 Home
               </Link>
               <div className="space-y-2">
-                <p className="text-sm font-semibold text-muted-foreground">Teams</p>
+                <p className="text-sm font-semibold text-muted-foreground">
+                  Teams
+                </p>
                 {games.map((game) => (
                   <Link
                     key={game.slug}
@@ -93,5 +118,5 @@ export function Navbar() {
         )}
       </div>
     </nav>
-  )
+  );
 }

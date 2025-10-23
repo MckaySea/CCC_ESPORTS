@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import Image from "next/image"
-import { ArrowRight } from "lucide-react"
+import Link from "next/link";
+import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 
 const games = [
   {
@@ -29,25 +29,25 @@ const games = [
   {
     name: "Rocket League",
     slug: "rocket-league",
-    logo: "/placeholder.svg?height=200&width=200",
+    logo: "/RL-logo.jpg",
     description: "Supersonic acrobatic rocket-powered cars",
     playerCount: 3,
   },
   {
     name: "Overwatch 2",
     slug: "overwatch-2",
-    logo: "/placeholder.svg?height=200&width=200",
+    logo: "/ow2-logo.png",
     description: "Hero-based team shooter",
     playerCount: 5,
   },
   {
     name: "Apex Legends",
     slug: "apex-legends",
-    logo: "/placeholder.svg?height=200&width=200",
+    logo: "/apex-logo.png",
     description: "Battle royale legends",
     playerCount: 3,
   },
-]
+];
 
 export function GameSelection() {
   return (
@@ -57,7 +57,9 @@ export function GameSelection() {
           <h2 className="text-4xl md:text-5xl font-black uppercase mb-4">
             Our <span className="text-primary">Games</span>
           </h2>
-          <p className="text-lg text-muted-foreground">Choose a game to meet the team</p>
+          <p className="text-lg text-muted-foreground">
+            Choose a game to meet the team
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -81,8 +83,12 @@ export function GameSelection() {
                   <h3 className="text-xl font-black uppercase mb-2 group-hover:text-primary transition-colors">
                     {game.name}
                   </h3>
-                  <p className="text-sm text-muted-foreground mb-1">{game.description}</p>
-                  <p className="text-xs text-primary font-semibold">{game.playerCount} Players</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {game.description}
+                  </p>
+                  <p className="text-xs text-primary font-semibold">
+                    {game.playerCount} Players
+                  </p>
                 </div>
                 <div className="flex items-center gap-2 text-sm font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
                   View Team <ArrowRight className="w-4 h-4" />
@@ -93,5 +99,5 @@ export function GameSelection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
