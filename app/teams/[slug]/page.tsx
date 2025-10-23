@@ -1,196 +1,160 @@
+// app/team/[slug]/page.tsx
+
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+// Import the database pool client
+import pool from "@/lib/db";
 
-const teamsData = {
-  "league-of-legends": {
-    game: "League of Legends",
-    logo: "/league-of-legends-logo.png",
-    description:
-      "Our League of Legends team competes in the collegiate circuit, showcasing strategic gameplay and mechanical prowess in the world's most popular MOBA.",
-    players: [
-      {
-        name: 'Alex "Striker" Chen',
-        role: "Top Lane",
-        image: "/college-student-playing-league-of-legends-competit.jpg",
-      },
-      {
-        name: 'Jordan "Flash" Kim',
-        role: "Jungle",
-        image: "/focused-esports-player-at-gaming-setup.jpg",
-      },
-      {
-        name: 'Sam "Nexus" Rivera',
-        role: "Mid Lane",
-        image: "/competitive-gamer-with-headset.jpg",
-      },
-      {
-        name: 'Taylor "Bolt" Johnson',
-        role: "ADC",
-        image: "/esports-player-in-team-jersey.jpg",
-      },
-      {
-        name: 'Morgan "Shield" Lee',
-        role: "Support",
-        image: "/college-esports-team-member.jpg",
-      },
-    ],
-  },
-  valorant: {
-    game: "Valorant",
-    logo: "/valorant-logo.png",
-    description:
-      "Our Valorant squad brings tactical precision and agent mastery to every match, competing at the highest level of collegiate play.",
-    players: [
-      {
-        name: 'Casey "Phantom" Davis',
-        role: "Duelist",
-        image: "/valorant-player-at-tournament.jpg",
-      },
-      {
-        name: 'Riley "Sage" Martinez',
-        role: "Controller",
-        image: "/focused-valorant-competitor.jpg",
-      },
-      {
-        name: 'Avery "Viper" Thompson',
-        role: "Sentinel",
-        image: "/esports-player-with-gaming-mouse.jpg",
-      },
-      {
-        name: 'Quinn "Jett" Anderson',
-        role: "Initiator",
-        image: "/college-student-at-gaming-competition.jpg",
-      },
-      {
-        name: 'Drew "Omen" Wilson',
-        role: "Flex",
-        image: "/valorant-team-member-practicing.jpg",
-      },
-    ],
-  },
-  cs2: {
-    game: "CS2",
-    logo: "/counter-strike-2-logo.png",
-    description:
-      "Our Counter-Strike 2 roster combines veteran experience with fresh talent, executing flawless strategies in the most competitive FPS.",
-    players: [
-      {
-        name: 'Blake "Ace" Foster',
-        role: "AWPer",
-        image: "/counter-strike-player-at-lan-event.jpg",
-      },
-      {
-        name: 'Skylar "Clutch" Hayes',
-        role: "Entry Fragger",
-        image: "/cs2-competitive-player.jpg",
-      },
-      {
-        name: 'Cameron "Smoke" Brooks',
-        role: "Support",
-        image: "/esports-team-captain.jpg",
-      },
-      {
-        name: 'Reese "Flash" Cooper',
-        role: "Lurker",
-        image: "/focused-cs2-player.jpg",
-      },
-      {
-        name: 'Peyton "IGL" Morgan',
-        role: "In-Game Leader",
-        image: "/placeholder.svg?height=400&width=400",
-      },
-    ],
-  },
-  "rocket-league": {
-    game: "Rocket League",
-    logo: "/placeholder.svg?height=200&width=200",
-    description:
-      "Our Rocket League team showcases incredible aerial mechanics and team coordination in this high-octane vehicular soccer game.",
-    players: [
-      {
-        name: 'Kai "Boost" Sullivan',
-        role: "Striker",
-        image: "/placeholder.svg?height=400&width=400",
-      },
-      {
-        name: 'Sage "Aerial" Park',
-        role: "Midfielder",
-        image: "/placeholder.svg?height=400&width=400",
-      },
-      {
-        name: 'River "Wall" Bennett',
-        role: "Goalkeeper",
-        image: "/placeholder.svg?height=400&width=400",
-      },
-    ],
-  },
-  "overwatch-2": {
-    game: "Overwatch 2",
-    logo: "/placeholder.svg?height=200&width=200",
-    description:
-      "Our Overwatch 2 roster demonstrates exceptional hero synergy and adaptability across all roles in this dynamic team-based shooter.",
-    players: [
-      {
-        name: 'Phoenix "Tank" Cruz',
-        role: "Tank",
-        image: "/placeholder.svg?height=400&width=400",
-      },
-      {
-        name: 'Rowan "Heals" Price',
-        role: "Support",
-        image: "/placeholder.svg?height=400&width=400",
-      },
-      {
-        name: 'Ash "DPS" Reed',
-        role: "Damage",
-        image: "/placeholder.svg?height=400&width=400",
-      },
-      {
-        name: 'Ellis "Flex" Stone',
-        role: "Flex",
-        image: "/placeholder.svg?height=400&width=400",
-      },
-      {
-        name: 'Sage "Shot" Bell',
-        role: "DPS",
-        image: "/placeholder.svg?height=400&width=400",
-      },
-    ],
-  },
-  "apex-legends": {
-    game: "Apex Legends",
-    logo: "/placeholder.svg?height=200&width=200",
-    description:
-      "Our Apex Legends squad excels in fast-paced battle royale action with superior positioning and legend composition strategies.",
-    players: [
-      {
-        name: 'Nova "Wraith" James',
-        role: "Fragger",
-        image: "/placeholder.svg?height=400&width=400",
-      },
-      {
-        name: 'Zion "Gibby" Walsh',
-        role: "Support",
-        image: "/placeholder.svg?height=400&width=400",
-      },
-      {
-        name: 'Echo "Path" Quinn',
-        role: "Scout",
-        image: "/placeholder.svg?height=400&width=400",
-      },
-    ],
-  },
+// --- TypeScript Interfaces ---
+
+// Used for client-side rendering/component props
+interface Player {
+  name: string;
+  role: string;
+  image: string;
+}
+
+interface TeamData {
+  game: string;
+  logo: string;
+  description: string;
+  players: Player[];
+  slug: string;
+}
+
+// Interfaces for the data returned directly from PostgreSQL
+interface GameDBRow {
+  game_id: number;
+  name: string;
+  player_count: number; // For description field
+}
+
+interface PlayerDBRow {
+  name: string;
+  role: string;
+  team_name: string;
+  discord_id: string; // BIGINT is read as string
+}
+
+// --- Role-Based Image Mapping ---
+
+// Define role-to-image mapping using files from the public directory
+// app/team/[slug]/page.tsx (Updated ROLE_IMAGE_MAP)
+
+const ROLE_IMAGE_MAP: Record<string, string> = {
+  // MOBA Roles (all keys converted to UPPERCASE)
+  TOP: "/college-student-playing-league-of-legends-competit.jpg",
+  JUNGLE: "/competitive-gamer-with-headset.jpg",
+  MID: "/esports-team-captain.jpg",
+  ADC: "/esports-player-in-team-jersey.jpg",
+  SUPPORT: "/college-esports-team-member.jpg",
+
+  // FPS Roles
+  AWPER: "/counter-strike-player-at-lan-event.jpg",
+  ENTRY_FRAGGER: "/cs2-competitive-player.jpg",
+  CONTROLLER: "/focused-esports-player-at-gaming-setup.jpg",
+  SENTINEL: "/esports-player-with-gaming-mouse.jpg",
+  DUELIST: "/focused-valorant-competitor.jpg",
+
+  // General/Fallback Roles
+  CAPTAIN: "/esports-team-captain.jpg",
+  FLEX: "/focused-esports-player-at-gaming-setup.jpg",
+  STRIKER: "/placeholder.svg?height=400&width=400",
+  MIDFIELDER: "/placeholder.svg?height=400&width=400",
+  GOALKEEPER: "/placeholder.svg?height=400&width=400",
+  TANK: "/placeholder.svg?height=400&width=400",
+  DAMAGE: "/placeholder.svg?height=400&width=400",
+  HEALS: "/placeholder.svg?height=400&width=400",
+  FRAGGER: "/placeholder.svg?height=400&width=400",
+  SCOUT: "/placeholder.svg?height=400&width=400",
+  IN_GAME_LEADER: "/esports-team-captain.jpg",
+  LURKER: "/focused-cs2-player.jpg",
+
+  // Default fallback image
+  DEFAULT: "/placeholder.svg?height=400&width=400",
 };
 
-export function generateStaticParams() {
-  return Object.keys(teamsData).map((slug) => ({
-    slug,
-  }));
+// --- Data Fetching Functions ---
+
+// 1. Fetch ALL Game Slugs for static generation
+export async function generateStaticParams() {
+  const query = "SELECT name FROM Games";
+
+  try {
+    const result = await pool.query(query);
+    // Explicitly type 'row' to avoid the implicit 'any' error
+    return result.rows.map((row: { name: string }) => ({
+      // Convert game names to URL-friendly slugs
+      slug: row.name.toLowerCase().replace(/\s/g, "-"),
+    }));
+  } catch (error) {
+    console.error("Error fetching static params:", error);
+    return [];
+  }
 }
+
+// 2. Fetch data for the specific team page
+async function getTeamData(slug: string): Promise<TeamData | null> {
+  // Convert the URL slug into a lowercase string with spaces instead of hyphens
+  const lowerSlug = slug.toLowerCase().replace(/-/g, " ");
+
+  // 1. Fetch Game Details using LOWER() for case-insensitive matching
+  const gameQuery = `
+    SELECT game_id, name, player_count
+    FROM Games 
+    -- FIX: Convert the stored name to lowercase for a reliable match against the slug
+    WHERE LOWER(name) = $1 
+  `;
+
+  // Use the interface to type the expected result
+  const gameResult = await pool.query<GameDBRow>(gameQuery, [lowerSlug]);
+
+  if (gameResult.rows.length === 0) {
+    return null; // Game not found (results in 404)
+  }
+
+  const game = gameResult.rows[0];
+  const gameId = game.game_id;
+
+  // 2. Fetch Players for that Game (joining Teams -> Players)
+  const playersQuery = `
+    SELECT p.name, p.role
+    FROM Players p
+    JOIN Teams t ON p.team_id = t.team_id
+    WHERE t.game_id = $1
+    ORDER BY p.role
+  `;
+
+  // Use the interface to type the expected result
+  const playersResult = await pool.query<PlayerDBRow>(playersQuery, [gameId]);
+
+  // 3. Map DB results to the required Player structure and assign image based on role
+  const players: Player[] = playersResult.rows.map((row: PlayerDBRow) => {
+    const upperCaseRole = row.role.toUpperCase();
+    const imagePath =
+      ROLE_IMAGE_MAP[upperCaseRole] || ROLE_IMAGE_MAP["DEFAULT"];
+    return {
+      name: row.name,
+      role: row.role,
+      image: imagePath, // Use the dynamically selected path
+    };
+  });
+
+  // 4. Construct the final TeamData object
+  return {
+    game: game.name, // Use the actual name returned from DB for display
+    logo: "/placeholder.svg?height=200&width=200",
+    description: `Competing in ${game.name}. Required roster size: ${game.player_count} players.`,
+    players: players,
+    slug: slug,
+  };
+}
+
+// --- Main Next.js Component ---
 
 export default async function TeamPage({
   params,
@@ -198,7 +162,8 @@ export default async function TeamPage({
   params: { slug: string };
 }) {
   const awaitedParams = await params;
-  const team = teamsData[awaitedParams.slug as keyof typeof teamsData];
+  const team = await getTeamData(awaitedParams.slug); // Fetch data
+
   if (!team) {
     notFound();
   }
@@ -273,6 +238,11 @@ export default async function TeamPage({
                 </div>
               ))}
             </div>
+            {team.players.length === 0 && (
+              <p className="text-center text-muted-foreground mt-8">
+                No players currently listed for this team.
+              </p>
+            )}
           </div>
         </section>
 
