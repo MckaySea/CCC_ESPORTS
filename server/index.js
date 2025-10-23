@@ -5,10 +5,10 @@ const pool = require("./db"); // Import the database pool
 
 // --- Configuration ---
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
-const CLIENT_ID = process.env.CLIENT_ID;
-const GUILD_ID = process.env.GUILD_ID;
-const WEBHOOK_PORT = process.env.WEBHOOK_PORT || 3001;
-const ADMIN_CHANNEL_ID = process.env.ADMIN_CHANNEL_ID;
+const CLIENT_ID = process.env.CLIENT_ID; // Your Bot Client ID
+const GUILD_ID = process.env.GUILD_ID; // Your Guild ID
+const WEBHOOK_PORT = process.env.WEBHOOK_PORT || 3001; // Port for the Express server
+const ADMIN_CHANNEL_ID = process.env.ADMIN_CHANNEL_ID; // Channel for applications
 
 const client = new Client({
   intents: [
