@@ -33,8 +33,7 @@ export function Hero() {
               <Image
                 src="/ccc-esports-logo.png"
                 alt="CCC Esports Logo"
-                width={160} // Explicitly set width
-                height={160} // Explicitly set height
+                fill
                 className="object-contain drop-shadow-[0_0_30px_rgba(34,197,94,0.3)]"
                 priority
               />
