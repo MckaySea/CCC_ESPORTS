@@ -36,6 +36,10 @@ export function Hero() {
                 fill
                 className="object-contain drop-shadow-[0_0_30px_rgba(34,197,94,0.3)]"
                 priority
+                // 💡 Add sizes to tell Next.js the max dimensions of the logo
+                // max-width of 768px (md: breakpoint) the size is 128px (w-32/h-32)
+                // above 768px, the size is 160px (md:w-40/md:h-40)
+                sizes="(max-width: 768px) 128px, 160px"
               />
             </div>
           </div>
