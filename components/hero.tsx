@@ -15,10 +15,13 @@ export function Hero() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-20">
         {/* Background image with overlay */}
         <div className="absolute inset-0 z-0">
-          <img
+          <Image
             src="/esports-gaming-arena-with-dramatic-lighting.jpg"
             alt="Esports Arena"
-            className="w-full h-full object-cover opacity-40"
+            fill
+            priority // Use 'priority' since it's above the fold
+            className="object-cover opacity-40"
+            sizes="100vw" // Helps Next.js calculate best image size
           />
           <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
         </div>
