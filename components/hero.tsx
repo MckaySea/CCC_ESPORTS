@@ -9,7 +9,7 @@ import Image from "next/image";
 
 export function Hero() {
   const [joinModalOpen, setJoinModalOpen] = useState(false);
-
+  const [isLoaded, setIsLoaded] = useState(false);
   return (
     <>
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-20">
@@ -29,13 +29,21 @@ export function Hero() {
         {/* Content */}
         <div className="relative z-10 container mx-auto px-4 text-center">
           <div className="mb-6 flex justify-center">
-            <div className="relative w-32 h-32 md:w-40 md:h-40 animate-in fade-in zoom-in duration-700">
+            <div
+              className={`relative w-32 h-32 md:w-40 md:h-40 transition-opacity duration-700 ${
+                isLoaded ? "opacity-100 scale-100" : "opacity-0 scale-90"
+              }`}
+              // Optional: Add a subtle delay to look more like the original animation
+              style={{ transitionProperty: "opacity, transform" }}
+            >
               <Image
                 src="/ccc-esports-logo.png"
                 alt="CCC Esports Logo"
                 fill
-                className="object-contain drop-shadow-[0_0_30px_rgba(34,197,94,0.3)]"
                 priority
+                className="object-contain drop-shadow-[0_0_30px_rgba(34,197,94,0.3)]"
+                // Key change: Set state when the image is fully loaded
+                onLoadingComplete={() => setIsLoaded(true)}
               />
             </div>
           </div>
