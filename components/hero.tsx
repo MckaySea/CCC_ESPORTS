@@ -33,7 +33,6 @@ export function Hero() {
               className={`relative w-32 h-32 md:w-40 md:h-40 transition-opacity duration-700 ${
                 isLoaded ? "opacity-100 scale-100" : "opacity-0 scale-90"
               }`}
-              // Optional: Add a subtle delay to look more like the original animation
               style={{ transitionProperty: "opacity, transform" }}
             >
               <Image
