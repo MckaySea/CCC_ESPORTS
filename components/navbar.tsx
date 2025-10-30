@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
+import { Facebook, Instagram } from "lucide-react";
+import { SiDiscord } from "react-icons/si";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,7 +42,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6">
             <Link
               href="/"
               className="text-sm font-semibold hover:text-primary transition-colors"
@@ -69,6 +71,42 @@ export function Navbar() {
             >
               About
             </Link>
+            <Link
+              href="/sponsors"
+              className="text-sm font-semibold hover:text-primary transition-colors"
+            >
+              Sponsors
+            </Link>
+
+            <div className="flex items-center gap-3 ml-6 pl-6 border-l border-primary/20">
+              <a
+                href="https://discord.gg/cccesports"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground hover:text-primary transition-colors"
+                aria-label="Discord"
+              >
+                <SiDiscord className="w-5 h-5" />
+              </a>
+              <a
+                href="https://instagram.com/cccesports"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground hover:text-primary transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-5 h-5" />
+              </a>
+              <a
+                href="https://facebook.com/cccesports"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground hover:text-primary transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="w-5 h-5" />
+              </a>
+            </div>
           </div>
 
           {/* Mobile Menu Button */}
@@ -113,6 +151,43 @@ export function Navbar() {
               >
                 About
               </Link>
+              <Link
+                href="/sponsors"
+                onClick={() => setIsOpen(false)}
+                className="text-sm font-semibold hover:text-primary transition-colors"
+              >
+                Sponsors
+              </Link>
+
+              <div className="flex items-center gap-6 pt-4 border-t border-primary/20">
+                <a
+                  href="https://discord.gg/cccesports"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground hover:text-primary transition-colors"
+                  aria-label="Discord"
+                >
+                  <SiDiscord className="w-6 h-6" />
+                </a>
+                <a
+                  href="https://instagram.com/cccesports"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground hover:text-primary transition-colors"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="w-6 h-6" />
+                </a>
+                <a
+                  href="https://facebook.com/cccesports"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground hover:text-primary transition-colors"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="w-6 h-6" />
+                </a>
+              </div>
             </div>
           </div>
         )}

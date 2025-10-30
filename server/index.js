@@ -389,7 +389,7 @@ client.on("interactionCreate", async (interaction) => {
     try {
       await pool.query(query, [gameName, playerCount]);
       await interaction.reply({
-        content: `✅ Game **${gameName}** (Players: ${playerCount}) has been added.`,
+        content: `✅ Game **${gameName}** (Players: ${playerCount}) has been added. Please give the site 30 seconds to update!`,
         ephemeral: isEphemeral,
       });
     } catch (error) {
@@ -516,7 +516,7 @@ client.on("interactionCreate", async (interaction) => {
       );
 
       await interaction.reply({
-        content: `✅ Player **${playerName}** has been added to **${teamName}** as **${playerRole}**.`,
+        content: `✅ Player **${playerName}** has been added to **${teamName}** as **${playerRole}**. Please wait 30 seconds for the site to update!`,
         ephemeral: isEphemeral,
       });
     } catch (error) {

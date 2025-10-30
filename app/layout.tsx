@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
+import { Toaster } from "sonner";
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
@@ -29,8 +30,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans antialiased`}>
+      <body className={`font-sans antialiased bg-background text-foreground`}>
         {children}
+
+        {/* Dark-themed Sonner Toaster */}
+        <Toaster
+          position="top-center"
+          richColors
+          toastOptions={{
+            className:
+              "rounded-xl px-6 py-4 font-bold shadow-2xl shadow-black/40 bg-gray-900 text-white border border-primary/40",
+          }}
+        />
+
         <Analytics />
       </body>
     </html>

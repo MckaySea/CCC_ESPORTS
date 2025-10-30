@@ -1,7 +1,8 @@
 "use client";
 
-import type React from "react";
 import { useState } from "react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,124 +13,120 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Loader2, CheckCircle, XCircle } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface JoinModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-type StatusType = {
-  type: "idle" | "loading" | "success" | "error";
-  message: string;
-};
-
 export function JoinModal({ open, onOpenChange }: JoinModalProps) {
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     discord: "",
     phone: "",
     email: "",
-  });
-  const [status, setStatus] = useState<StatusType>({
-    type: "idle",
-    message: "",
+    over18: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
-  };
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus({ type: "loading", message: "Submitting application..." });
+    setLoading(true);
 
-    // The Next.js API route is located at /api/application
     try {
-      // 🎯 FIX: This is the missing fetch call to your Next.js API route
-      const response = await fetch("/api/application", {
+      const res = await fetch("/api/join", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
-      const result = await response.json();
+      const result = await res.json();
 
-      if (response.ok) {
-        // Success
-        setStatus({
-          type: "success",
-          message:
-            "Application submitted successfully! Check Discord for updates.",
-        });
-        // Clear the form after success
-        setFormData({ name: "", discord: "", phone: "", email: "" });
-
-        // Auto-close modal after a short delay for user to see the message
-        setTimeout(() => onOpenChange(false), 3000);
+      if (!res.ok) {
+        toast.error(result.message || "Failed to submit application.");
       } else {
-        // API Route/Bot Server Error
-        setStatus({
-          type: "error",
-          message:
-            result.message ||
-            "Submission failed. Check your data and try again.",
+        toast.success("✅ Application submitted successfully!");
+        onOpenChange(false);
+        setFormData({
+          firstName: "",
+          lastName: "",
+          discord: "",
+          phone: "",
+          email: "",
+          over18: "",
         });
-        console.error("Submission failed on server:", result);
       }
     } catch (error) {
-      // Network/Connection Error
-      console.error("Network error during submission:", error);
-      setStatus({
-        type: "error",
-        message: "A network error occurred. Please check your connection.",
-      });
+      console.error("Error submitting form:", error);
+      toast.error("❌ An error occurred while submitting the application.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Determine if the form can be submitted (must not be loading and must have required fields)
-  const isFormValid =
-    formData.name.trim() !== "" &&
-    formData.discord.trim() !== "" &&
-    formData.email.trim() !== "";
-  const isLoading = status.type === "loading";
-  const isError = status.type === "error";
-  const isSuccess = status.type === "success";
-  const isFormDisabled = isLoading || isSuccess;
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] bg-card border-primary/20">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-black uppercase text-primary">
+      <DialogContent className="sm:max-w-[600px] bg-gradient-to-br from-card via-card to-card/95 border-2 border-primary/30 shadow-2xl shadow-primary/20">
+        <DialogHeader className="space-y-3 pb-2">
+          <DialogTitle className="text-3xl font-black uppercase text-center bg-gradient-to-r from-primary via-primary to-cyan-400 bg-clip-text text-transparent">
             Join CCC Esports
           </DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            Fill out the form below to join our competitive gaming community
+          <DialogDescription className="text-muted-foreground text-center text-base">
+            Become part of our competitive gaming community
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-foreground font-semibold">
-              Full Name *
-            </Label>
-            <Input
-              id="name"
-              type="text"
-              placeholder="John Doe"
-              required
-              value={formData.name}
-              onChange={handleInputChange}
-              className="bg-background border-primary/20 focus:border-primary"
-              disabled={isFormDisabled}
-            />
+        <form onSubmit={handleSubmit} className="space-y-5 mt-2">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label
+                htmlFor="firstName"
+                className="text-foreground font-semibold text-sm"
+              >
+                First Name *
+              </Label>
+              <Input
+                id="firstName"
+                type="text"
+                placeholder="John"
+                required
+                value={formData.firstName}
+                onChange={(e) =>
+                  setFormData({ ...formData, firstName: e.target.value })
+                }
+                className="bg-background/50 border-primary/30 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label
+                htmlFor="lastName"
+                className="text-foreground font-semibold text-sm"
+              >
+                Last Name *
+              </Label>
+              <Input
+                id="lastName"
+                type="text"
+                placeholder="Doe"
+                required
+                value={formData.lastName}
+                onChange={(e) =>
+                  setFormData({ ...formData, lastName: e.target.value })
+                }
+                className="bg-background/50 border-primary/30 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-foreground font-semibold">
+            <Label
+              htmlFor="email"
+              className="text-foreground font-semibold text-sm"
+            >
               Email Address *
             </Label>
             <Input
@@ -138,82 +135,107 @@ export function JoinModal({ open, onOpenChange }: JoinModalProps) {
               placeholder="john.doe@college.edu"
               required
               value={formData.email}
-              onChange={handleInputChange}
-              className="bg-background border-primary/20 focus:border-primary"
-              disabled={isFormDisabled}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              className="bg-background/50 border-primary/30 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="discord" className="text-foreground font-semibold">
-              Discord Username *
+            <Label
+              htmlFor="discord"
+              className="text-foreground font-semibold text-sm"
+            >
+              Discord Name/Handle *
             </Label>
             <Input
               id="discord"
               type="text"
-              placeholder="username#1234 or @username"
+              placeholder="username#0000 or @username"
               required
               value={formData.discord}
-              onChange={handleInputChange}
-              className="bg-background border-primary/20 focus:border-primary"
-              disabled={isFormDisabled}
+              onChange={(e) =>
+                setFormData({ ...formData, discord: e.target.value })
+              }
+              className="bg-background/50 border-primary/30 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone" className="text-foreground font-semibold">
-              Phone Number
+            <Label
+              htmlFor="phone"
+              className="text-foreground font-semibold text-sm"
+            >
+              Phone Number *
             </Label>
             <Input
               id="phone"
               type="tel"
               placeholder="(555) 123-4567"
+              required
               value={formData.phone}
-              onChange={handleInputChange}
-              className="bg-background border-primary/20 focus:border-primary"
-              disabled={isFormDisabled}
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
+              className="bg-background/50 border-primary/30 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
             />
           </div>
 
-          {/* Status Message Display */}
-          {status.type !== "idle" && (
-            <div
-              className={`p-3 rounded-lg flex items-center gap-2 font-medium ${
-                isSuccess
-                  ? "bg-green-500/10 text-green-500 border border-green-500/30"
-                  : isError
-                  ? "bg-red-500/10 text-red-500 border border-red-500/30"
-                  : "bg-blue-500/10 text-blue-500 border border-blue-500/30"
-              }`}
+          <div className="space-y-3 pt-2">
+            <Label className="text-foreground font-semibold text-sm">
+              Are you over the age of 18? *
+            </Label>
+            <RadioGroup
+              required
+              value={formData.over18}
+              onValueChange={(value) =>
+                setFormData({ ...formData, over18: value })
+              }
+              className="flex gap-6"
             >
-              {isLoading && <Loader2 className="h-5 w-5 animate-spin" />}
-              {isSuccess && <CheckCircle className="h-5 w-5" />}
-              {isError && <XCircle className="h-5 w-5" />}
-              {status.message}
-            </div>
-          )}
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
+                  value="yes"
+                  id="yes"
+                  className="border-primary/50 text-primary"
+                />
+                <Label
+                  htmlFor="yes"
+                  className="text-foreground cursor-pointer font-medium"
+                >
+                  Yes
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
+                  value="no"
+                  id="no"
+                  className="border-primary/50 text-primary"
+                />
+                <Label
+                  htmlFor="no"
+                  className="text-foreground cursor-pointer font-medium"
+                >
+                  No
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-6">
             <Button
               type="submit"
-              className="flex-1 font-bold uppercase tracking-wide"
-              disabled={!isFormValid || isLoading || isSuccess}
+              disabled={loading}
+              className="flex-1 font-bold uppercase tracking-wide bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all"
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                "Submit Application"
-              )}
+              {loading ? "Submitting..." : "Submit Application"}
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="font-bold uppercase tracking-wide"
-              disabled={isLoading}
+              className="font-bold uppercase tracking-wide border-primary/30 hover:bg-primary/10 hover:border-primary/50 transition-all"
             >
               Cancel
             </Button>

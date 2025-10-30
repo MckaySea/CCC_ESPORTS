@@ -1,6 +1,7 @@
 const pool = require("./db");
 
 // Define the complete SQL schema using the tables you provided
+// The new 'Applicants' table has been added at the end.
 const setupSchemaSQL = `
 -- Create the Games Table
 CREATE TABLE IF NOT EXISTS Games (
@@ -32,6 +33,20 @@ CREATE TABLE IF NOT EXISTS Players (
 CREATE TABLE IF NOT EXISTS Admins (
     discord_id BIGINT PRIMARY KEY
 );
+
+-- -----------------------------------------------------------------------
+-- NEW TABLE: Create the Applicants Table for the registration form data
+-- -----------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS Applicants (
+    application_id SERIAL PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    discord_handle VARCHAR(100) NOT NULL,
+    phone_number VARCHAR(20) NOT NULL,
+    is_over_18 BOOLEAN NOT NULL, -- Stores TRUE/FALSE based on the radio button selection
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 `;
 
 /**
@@ -45,7 +60,7 @@ async function setupDatabase() {
 
     console.log("----------------------------------------------------");
     console.log(
-      "✅ SUCCESS: All four tables (Games, Teams, Players, Admins) have been created or verified."
+      "✅ SUCCESS: All five tables (Games, Teams, Players, Admins, Applicants) have been created or verified."
     );
     console.log("The database is now ready for use by your index.js bot.");
     console.log("----------------------------------------------------");
