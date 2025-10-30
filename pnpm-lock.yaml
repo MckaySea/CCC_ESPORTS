@@ -95,12 +95,18 @@ dependencies:
   '@supabase/supabase-js':
     specifier: ^2.77.0
     version: 2.77.0
+  '@types/bcryptjs':
+    specifier: ^3.0.0
+    version: 3.0.0
   '@vercel/analytics':
     specifier: latest
     version: 1.5.0(next@15.5.6)(react@19.2.0)
   autoprefixer:
     specifier: ^10.4.20
     version: 10.4.21(postcss@8.5.6)
+  bcryptjs:
+    specifier: ^3.0.2
+    version: 3.0.2
   class-variance-authority:
     specifier: ^0.7.1
     version: 0.7.1
@@ -2050,6 +2056,13 @@ packages:
       tailwindcss: 4.1.16
     dev: true
 
+  /@types/bcryptjs@3.0.0:
+    resolution: {integrity: sha512-WRZOuCuaz8UcZZE4R5HXTco2goQSI2XxjGY3hbM/xDvwmqFWd4ivooImsMx65OKM6CtNKbnZ5YL+YwAwK7c1dg==}
+    deprecated: This is a stub types definition. bcryptjs provides its own type definitions, so you do not need this installed.
+    dependencies:
+      bcryptjs: 3.0.2
+    dev: false
+
   /@types/d3-array@3.2.2:
     resolution: {integrity: sha512-hOLWVbm7uRza0BYXpIIW5pxfrKe0W+D5lrFiAEYR+pb6w3N2SwSMaJbXdUfSEv+dT4MfHBLtn5js0LAWaO6otw==}
     dev: false
@@ -2174,6 +2187,11 @@ packages:
 
   /baseline-browser-mapping@2.8.21:
     resolution: {integrity: sha512-JU0h5APyQNsHOlAM7HnQnPToSDQoEBZqzu/YBlqDnEeymPnZDREeXJA3KBMQee+dKteAxZ2AtvQEvVYdZf241Q==}
+    hasBin: true
+    dev: false
+
+  /bcryptjs@3.0.2:
+    resolution: {integrity: sha512-k38b3XOZKv60C4E2hVsXTolJWfkGRMbILBIe2IBITXciy5bOsTKot5kDrf3ZfufQtQOUN5mXceUEpU1rTl9Uog==}
     hasBin: true
     dev: false
 
