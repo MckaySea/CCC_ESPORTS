@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
 import Image from "next/image";
 import { Facebook, Instagram } from "lucide-react";
 import { SiDiscord } from "react-icons/si";
+import { useSession, signOut } from "next-auth/react";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { data: session, status } = useSession();
 
   const games = [
     { name: "League of Legends", slug: "league-of-legends" },
@@ -77,6 +79,65 @@ export function Navbar() {
             >
               Sponsors
             </Link>
+
+            {/* Admin Links */}
+            {status === "authenticated" && session?.user?.role === "admin" && (
+              <div className="relative group">
+                <button className="text-sm font-semibold hover:text-primary transition-colors">
+                  Dashboard
+                </button>
+                <div className="absolute top-full left-0 mt-2 w-48 bg-card border border-primary/20 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <Link
+                    href="/admin/users"
+                    className="block px-4 py-2 text-sm hover:bg-primary/10 hover:text-primary transition-colors"
+                  >
+                    Manage Users
+                  </Link>
+                  <Link
+                    href="/admin/teams"
+                    className="block px-4 py-2 text-sm hover:bg-primary/10 hover:text-primary transition-colors"
+                  >
+                    Manage Teams
+                  </Link>
+                  <Link
+                    href="/admin/players"
+                    className="block px-4 py-2 text-sm hover:bg-primary/10 hover:text-primary transition-colors"
+                  >
+                    Manage Players
+                  </Link>
+                  <Link
+                    href="/admin/games"
+                    className="block px-4 py-2 text-sm hover:bg-primary/10 hover:text-primary transition-colors"
+                  >
+                    Manage Games
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {/* Auth Buttons */}
+            {status === "authenticated" ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold">
+                  {session.user?.name}
+                </span>
+                <button
+                  onClick={() => signOut()}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary/90 rounded-md transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/auth/signin"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary/90 rounded-md transition-colors"
+              >
+                <User className="w-4 h-4" />
+                Login
+              </Link>
+            )}
 
             <div className="flex items-center gap-3 ml-6 pl-6 border-l border-primary/20">
               <a
